@@ -29,12 +29,23 @@ public class RedisManager extends AbstractRedisManager {
         this.send(MessageType.REGISTER, server.toRedisString());
     }
 
-    public void sendKeepAlive() {
+    public void update() {
         this.send(MessageType.UPDATE, server.id());
+
+        // Add to cache
+        try (Jedis jedis = getResource()) {
+            jedis.hset("serversadder:cache", server.id(), server.toRedisString());
+            jedis.expire("serversadder:cache", 60);
+        }
     }
 
     public void unregisterServer() {
         this.send(MessageType.UNREGISTER, server.id());
+
+        // Remove from cache
+        try (Jedis jedis = getResource()) {
+            jedis.hdel("serversadder:cache", server.id());
+        }
     }
 
 
