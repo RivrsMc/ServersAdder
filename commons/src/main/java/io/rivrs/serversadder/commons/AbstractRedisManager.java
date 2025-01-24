@@ -1,7 +1,5 @@
 package io.rivrs.serversadder.commons;
 
-import java.nio.file.Path;
-
 import org.slf4j.Logger;
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +11,6 @@ import redis.clients.jedis.JedisPool;
 @RequiredArgsConstructor
 public abstract class AbstractRedisManager {
 
-    private final Path dataFolder;
     private final Logger logger;
     private JedisPool jedisPool;
 
@@ -50,12 +47,6 @@ public abstract class AbstractRedisManager {
     public abstract RedisCredentials loadCredentials();
 
     public abstract void postLoad();
-
-    public void send(String message) {
-        try (Jedis jedis = getResource()) {
-            jedis.publish("serversadder", message);
-        }
-    }
 
     public boolean isConnected() {
         return jedisPool != null;
