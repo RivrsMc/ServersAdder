@@ -1,6 +1,6 @@
 name: ServersAdder
 version: '1.0-SNAPSHOT'
 main: io.rivrs.serversadder.ServersAdder
-api-version: '1.21'
+api-version: '1.19'
 libraries:
   - redis.clients:jedis:${jedis.version}

@@ -23,7 +23,14 @@ public final class ServersAdder extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Unregister server
+        this.redis.unregisterServer();
+
+        // Cancel all tasks
         Bukkit.getScheduler().cancelTasks(this);
+
+        // Close redis
+        this.redis.close();
     }
 
 
