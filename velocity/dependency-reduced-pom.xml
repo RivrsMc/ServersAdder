@@ -37,6 +37,18 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <relocations>
+            <relocation>
+              <pattern>co.aikar.commands</pattern>
+              <shadedPattern>io.rivrs.serversadder.libs.acf</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>co.aikar.locales</pattern>
+              <shadedPattern>io.rivrs.serversadder.libs.locales</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -132,6 +144,12 @@
       </build>
     </profile>
   </profiles>
+  <repositories>
+    <repository>
+      <id>aikar</id>
+      <url>https://repo.aikar.co/content/groups/aikar/</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>com.velocitypowered</groupId>

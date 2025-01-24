@@ -14,6 +14,15 @@
     <name>velocity</name>
 
     <!-- repositories -->
+    <repositories>
+        <!-- aikar -->
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
+    </repositories>
+
+    <!-- dependencies -->
     <dependencies>
         <!-- velocity -->
         <dependency>
@@ -40,6 +49,11 @@
             <groupId>io.hotmoka</groupId>
             <artifactId>toml4j</artifactId>
             <version>0.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>co.aikar</groupId>
+            <artifactId>acf-velocity</artifactId>
+            <version>0.5.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -131,6 +145,18 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>co.aikar.commands</pattern>
+                            <shadedPattern>io.rivrs.serversadder.libs.acf</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>co.aikar.locales</pattern>
+                            <shadedPattern>io.rivrs.serversadder.libs.locales</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
