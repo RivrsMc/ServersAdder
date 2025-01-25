@@ -8,7 +8,11 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
+import io.rivrs.serversadder.command.SendCommand;
 import io.rivrs.serversadder.command.WhereIAmCommand;
+import io.rivrs.serversadder.command.completion.ServerCompletionHandler;
+import io.rivrs.serversadder.command.context.ServerContextResolver;
 import io.rivrs.serversadder.configuration.Configuration;
 import io.rivrs.serversadder.configuration.MessageConfiguration;
 import io.rivrs.serversadder.redis.RedisManager;
@@ -62,7 +66,10 @@ public class ServersAdder {
 
         // Commands
         this.commands = new VelocityCommandManager(this.server, this);
+        this.commands.getCommandCompletions().registerAsyncCompletion("servers", new ServerCompletionHandler(this));
+        this.commands.getCommandContexts().registerContext(RegisteredServer.class, new ServerContextResolver(this));
         this.commands.registerCommand(new WhereIAmCommand());
+        this.commands.registerCommand(new SendCommand());
     }
 
     @Subscribe
