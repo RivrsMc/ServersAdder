@@ -1,9 +1,6 @@
 package io.rivrs.serversadder;
 
-import java.nio.file.Path;
-
-import org.slf4j.Logger;
-
+import co.aikar.commands.VelocityCommandManager;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -11,10 +8,14 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-
+import io.rivrs.serversadder.command.WhereIAmCommand;
+import io.rivrs.serversadder.configuration.Configuration;
+import io.rivrs.serversadder.configuration.MessageConfiguration;
 import io.rivrs.serversadder.redis.RedisManager;
 import io.rivrs.serversadder.server.ServerService;
+import java.nio.file.Path;
 import lombok.Getter;
+import org.slf4j.Logger;
 
 @Plugin(
         id = "serversadder",
@@ -28,8 +29,11 @@ public class ServersAdder {
     private final Logger logger;
     private final Path dataDirectory;
 
+    private Configuration configuration;
+    private MessageConfiguration messages;
     private RedisManager redis;
     private ServerService service;
+    private VelocityCommandManager commands;
 
     @Inject
     public ServersAdder(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -40,6 +44,12 @@ public class ServersAdder {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+        // Configuration
+        this.configuration = new Configuration(this);
+        this.messages = new MessageConfiguration(this);
+        this.configuration.load();
+        this.messages.load();
+
         // Service
         this.service = new ServerService(this);
 
@@ -49,6 +59,10 @@ public class ServersAdder {
 
         // Start health check
         this.service.startHealthCheck();
+
+        // Commands
+        this.commands = new VelocityCommandManager(this.server, this);
+        this.commands.registerCommand(new WhereIAmCommand());
     }
 
     @Subscribe
@@ -58,5 +72,8 @@ public class ServersAdder {
 
         // Redis
         this.redis.close();
+
+        // Commands
+        this.commands.unregisterCommands();
     }
 }
