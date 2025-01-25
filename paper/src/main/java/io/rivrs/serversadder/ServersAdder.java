@@ -1,18 +1,25 @@
 package io.rivrs.serversadder;
 
+import co.aikar.commands.PaperCommandManager;
+import io.rivrs.serversadder.command.SetSlotCommand;
+import io.rivrs.serversadder.redis.RedisManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import io.rivrs.serversadder.redis.RedisManager;
 
 public final class ServersAdder extends JavaPlugin {
 
     private RedisManager redis;
+    private PaperCommandManager commands;
 
     @Override
     public void onEnable() {
+        // Redis
         this.redis = new RedisManager(this);
         this.redis.load();
+
+        // Commands
+        this.commands = new PaperCommandManager(this);
+        this.commands.registerCommand(new SetSlotCommand());
 
         // Register server
         Bukkit.getScheduler().runTask(this, () -> this.redis.registerServer());

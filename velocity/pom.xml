@@ -13,15 +13,6 @@
 
     <name>velocity</name>
 
-    <!-- repositories -->
-    <repositories>
-        <!-- aikar -->
-        <repository>
-            <id>aikar</id>
-            <url>https://repo.aikar.co/content/groups/aikar/</url>
-        </repository>
-    </repositories>
-
     <!-- dependencies -->
     <dependencies>
         <!-- velocity -->
