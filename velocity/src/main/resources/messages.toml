@@ -1,4 +1,5 @@
 whereiam = "<#16de87>You are currently on the proxy <#16de8><proxy> <#16de87>(<#16de8><server><#16de87>)"
+whereis = "<#16de87><#16de8><player><#16de87> is currently on the proxy <#16de8><proxy><#16de87> (<#16de8><server><#16de87>)"
 sending-player = "<#16de87>Sending <#16de8><player><#16de87> to <#16de8><server><#16de87>..."
 player-already-on-server = "<#16de87><#16de8><player><#16de87> is already on <#16de8><server><#16de87>!"
 player-sent-success = "<#16de87><#16de8><player><#16de87> has been sent to <#16de8><server><#16de87>!"

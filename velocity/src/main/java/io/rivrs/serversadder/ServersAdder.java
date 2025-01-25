@@ -12,6 +12,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import io.rivrs.serversadder.command.SendCommand;
 import io.rivrs.serversadder.command.WhereIAmCommand;
 import io.rivrs.serversadder.command.completion.ServerCompletionHandler;
+import io.rivrs.serversadder.command.WhereIsCommand;
 import io.rivrs.serversadder.command.context.ServerContextResolver;
 import io.rivrs.serversadder.configuration.Configuration;
 import io.rivrs.serversadder.configuration.MessageConfiguration;
@@ -69,6 +70,7 @@ public class ServersAdder {
         this.commands.getCommandCompletions().registerAsyncCompletion("servers", new ServerCompletionHandler(this));
         this.commands.getCommandContexts().registerContext(RegisteredServer.class, new ServerContextResolver(this));
         this.commands.registerCommand(new WhereIAmCommand());
+        this.commands.registerCommand(new WhereIsCommand());
         this.commands.registerCommand(new SendCommand());
     }
 
