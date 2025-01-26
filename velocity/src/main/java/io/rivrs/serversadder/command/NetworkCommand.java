@@ -1,5 +1,7 @@
 package io.rivrs.serversadder.command;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.velocitypowered.api.command.CommandSource;
 
 import co.aikar.commands.BaseCommand;
@@ -19,6 +21,7 @@ public class NetworkCommand extends BaseCommand {
     @Default
     public void onDefault(CommandSource source) {
         source.sendMessage(Component.text("Network information:", NamedTextColor.AQUA));
+        AtomicInteger totalPlayers = new AtomicInteger();
         this.plugin.getRedis()
                 .getGroups()
                 .forEach((group, servers) -> {
@@ -26,6 +29,7 @@ public class NetworkCommand extends BaseCommand {
                     int playersCount = servers.stream()
                             .mapToInt(server -> this.plugin.getRedis().getPlayersByServer(server.id()).size())
                             .sum();
+                    totalPlayers.addAndGet(playersCount);
 
                     source.sendMessage(Component.text(" • ", NamedTextColor.GRAY)
                             .append(Component.text(group, NamedTextColor.AQUA))
@@ -36,6 +40,10 @@ public class NetworkCommand extends BaseCommand {
                             .append(Component.text(")", NamedTextColor.GRAY))
                     );
                 });
+
+        source.sendMessage(Component.text("Total players: ", NamedTextColor.GRAY)
+                .append(Component.text(totalPlayers.get(), NamedTextColor.AQUA))
+        );
     }
 
     @Subcommand("servers")
