@@ -88,7 +88,6 @@ public class ServersAdder {
         this.commands.registerCommand(new WhereIsCommand());
         this.commands.registerCommand(new SendCommand());
         this.commands.registerCommand(new NetworkCommand());
-        this.commands.registerCommand(new SpawnCommand());
     }
 
     @Subscribe

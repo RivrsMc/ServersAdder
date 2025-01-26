@@ -50,7 +50,7 @@ public class RedisManager extends AbstractRedisManager {
 
     private void registerPubSub() {
         try (Jedis jedis = this.getResource()) {
-            jedis.subscribe(new MessagePubSub(this.plugin), RedisChannel.SERVERS.getChannel(), RedisChannel.PROXIES.getChannel());
+            jedis.subscribe(new MessagePubSub(this.plugin), RedisChannel.SERVERS.getChannel(), RedisChannel.PROXIES.getChannel(), RedisChannel.POKE_CORE.getChannel());
         } catch (Exception e) {
             this.plugin.getLogger().error("Failed to register pub/sub", e);
         }

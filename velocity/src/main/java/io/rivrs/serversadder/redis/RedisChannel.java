@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum RedisChannel {
     SERVERS("serversadder"),
     PROXIES("serversadder:proxies"),
-    RESTART("serversadder:restart");
+    RESTART("serversadder:restart"),
+    POKE_CORE("serversadder:poke-core");
 
     private final String channel;
 }

@@ -10,6 +10,3 @@ send-all-players-fail = "<#16de87>Failed to send all players to <#16de8><server>
 send-all-players-from-server = "<#16de87>Sending <players> players from <#16de8><source><#16de87> to <#16de8><target><#16de87>..."
 send-all-players-from-server-fail = "<#16de87>Failed to send all players from <#16de8><source><#16de87> to <#16de8><target><#16de87>!"
 send-all-players-from-server-success = "<#16de87>All players from <#16de8><source><#16de87> have been sent to <#16de8><target><#16de87>!"
-sending-to-spawn = "<#16de87>Vous allez être teleporté au spawn..."
-error-sending-to-spawn = "<#16de87>Erreur lors de la téléportation au spawn!"
-sent-to-spawn = "<#16de87>Vous avez été téléporté au spawn!"

@@ -137,6 +137,20 @@ public class MessagePubSub extends JedisPubSub {
                             .forEach(player -> player.createConnectionRequest(target).connect());
                 }
             }
+        } else if (channel.equals(RedisChannel.POKE_CORE.getChannel())) {
+            String[] split = message.split(":");
+            if (split.length < 2) {
+                this.logger.warn("Received invalid core message: {}", message);
+                return;
+            }
+
+            UUID playerId = UUID.fromString(split[0]);
+            String serverId = split[1];
+
+            this.logger.info("PokeCore request received for player {} to server {}", playerId, serverId);
+            this.plugin.getServer()
+                    .getPlayer(playerId)
+                    .ifPresentOrElse(player -> player.createConnectionRequest(this.plugin.getServer().getServer(serverId).orElse(null)).fireAndForget(), () -> this.logger.warn("[POKECORE] Player {} not found", playerId));
         } else {
             this.logger.warn("Received invalid channel: {}", message);
         }

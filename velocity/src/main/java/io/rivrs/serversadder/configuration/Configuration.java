@@ -26,10 +26,6 @@ public class Configuration {
     // Fallback
     private String fallbackGroup;
 
-    // Server groups
-    private String hubGroup;
-    private String spawnGroup;
-
     public Configuration(ServersAdder plugin) {
         this.plugin = plugin;
         this.path = plugin.getDataDirectory().resolve("config.toml");
@@ -69,11 +65,6 @@ public class Configuration {
         // Fallback
         Toml fallback = toml.getTable("fallback");
         this.fallbackGroup = fallback.getString("server-group");
-
-        // Server groups
-        Toml groups = toml.getTable("groups");
-        this.spawnGroup = groups.getString("spawn");
-        this.hubGroup = groups.getString("hub");
 
         // Server related
         Toml identifier = toml.getTable("identifier");
