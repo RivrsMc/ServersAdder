@@ -1,6 +1,9 @@
 package io.rivrs.serversadder;
 
-import co.aikar.commands.VelocityCommandManager;
+import java.nio.file.Path;
+
+import org.slf4j.Logger;
+
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -9,18 +12,22 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+
+import co.aikar.commands.VelocityCommandManager;
 import io.rivrs.serversadder.command.SendCommand;
-import io.rivrs.serversadder.command.WhereIAmCommand;
-import io.rivrs.serversadder.command.completion.ServerCompletionHandler;
+import io.rivrs.serversadder.command.WhereAmICommand;
 import io.rivrs.serversadder.command.WhereIsCommand;
+import io.rivrs.serversadder.command.completion.ProxyPlayerCompletionHandler;
+import io.rivrs.serversadder.command.completion.ServerCompletionHandler;
+import io.rivrs.serversadder.command.context.ProxyPlayerContextResolver;
 import io.rivrs.serversadder.command.context.ServerContextResolver;
 import io.rivrs.serversadder.configuration.Configuration;
 import io.rivrs.serversadder.configuration.MessageConfiguration;
+import io.rivrs.serversadder.listener.PlayerListener;
+import io.rivrs.serversadder.model.ProxyPlayer;
 import io.rivrs.serversadder.redis.RedisManager;
 import io.rivrs.serversadder.server.ServerService;
-import java.nio.file.Path;
 import lombok.Getter;
-import org.slf4j.Logger;
 
 @Plugin(
         id = "serversadder",
@@ -65,11 +72,16 @@ public class ServersAdder {
         // Start health check
         this.service.startHealthCheck();
 
+        // Listeners
+        server.getEventManager().register(this, new PlayerListener(this));
+
         // Commands
         this.commands = new VelocityCommandManager(this.server, this);
         this.commands.getCommandCompletions().registerAsyncCompletion("servers", new ServerCompletionHandler(this));
+        this.commands.getCommandCompletions().registerAsyncCompletion("proxyPlayers", new ProxyPlayerCompletionHandler(this));
         this.commands.getCommandContexts().registerContext(RegisteredServer.class, new ServerContextResolver(this));
-        this.commands.registerCommand(new WhereIAmCommand());
+        this.commands.getCommandContexts().registerContext(ProxyPlayer.class, new ProxyPlayerContextResolver(this));
+        this.commands.registerCommand(new WhereAmICommand());
         this.commands.registerCommand(new WhereIsCommand());
         this.commands.registerCommand(new SendCommand());
     }

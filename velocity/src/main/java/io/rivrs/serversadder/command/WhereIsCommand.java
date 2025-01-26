@@ -1,10 +1,11 @@
 package io.rivrs.serversadder.command;
 
+import com.velocitypowered.api.command.CommandSource;
+
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
-import co.aikar.commands.velocity.contexts.OnlinePlayer;
-import com.velocitypowered.api.command.CommandSource;
 import io.rivrs.serversadder.ServersAdder;
+import io.rivrs.serversadder.model.ProxyPlayer;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
 @CommandAlias("whereis")
@@ -17,13 +18,13 @@ public class WhereIsCommand extends BaseCommand {
 
     @Default
     @Syntax("<player>")
-    @CommandCompletion("@players")
-    public void onDefault(CommandSource source, OnlinePlayer player) {
+    @CommandCompletion("@proxyPlayers")
+    public void onDefault(CommandSource source, ProxyPlayer player) {
         source.sendMessage(this.plugin.getMessages().get(
                 "whereis",
-                Placeholder.parsed("player", player.getPlayer().getUsername()),
-                Placeholder.parsed("server", player.getPlayer().getCurrentServer().map(s -> s.getServerInfo().getName()).orElse("unknown")),
-                Placeholder.parsed("proxy", this.plugin.getConfiguration().getName())
+                Placeholder.parsed("player", player.getUsername()),
+                Placeholder.parsed("server", player.getServer() == null ? "Unknown" : player.getServer()),
+                Placeholder.parsed("proxy", player.getProxy())
         ));
     }
 }

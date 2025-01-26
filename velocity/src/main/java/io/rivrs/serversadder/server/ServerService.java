@@ -28,6 +28,7 @@ public class ServerService {
                     deadServers.forEach(id -> {
                         this.plugin.getLogger().warn("Server {} didn't respond to keep alive, removing...", id);
                         this.unregister(id);
+                        this.plugin.getRedis().unregisterServer(id);
                     });
                 })
                 .repeat(10, TimeUnit.SECONDS)

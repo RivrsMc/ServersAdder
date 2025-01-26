@@ -1,12 +1,21 @@
 package io.rivrs.serversadder.redis;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import com.velocitypowered.api.proxy.Player;
+
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.commons.AbstractRedisManager;
 import io.rivrs.serversadder.commons.GameServer;
 import io.rivrs.serversadder.commons.RedisCredentials;
-import java.util.List;
-import java.util.Optional;
+import io.rivrs.serversadder.model.ProxyActionType;
+import io.rivrs.serversadder.model.ProxyPlayer;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 
 public class RedisManager extends AbstractRedisManager {
 
@@ -42,7 +51,7 @@ public class RedisManager extends AbstractRedisManager {
 
     private void registerPubSub() {
         try (Jedis jedis = this.getResource()) {
-            jedis.subscribe(new MessagePubSub(this.plugin.getLogger(), this.plugin.getService()), "serversadder");
+            jedis.subscribe(new MessagePubSub(this.plugin), RedisChannel.SERVERS.getChannel(), RedisChannel.PROXIES.getChannel());
         } catch (Exception e) {
             this.plugin.getLogger().error("Failed to register pub/sub", e);
         }
@@ -58,28 +67,93 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
-    public Optional<GameServer> pullFromCache(String id) {
-        try (Jedis jedis = this.getResource()) {
-            String data = jedis.hget("serversadder:cache", id);
-            if (data == null || data.isEmpty())
-                return Optional.empty();
-
-            return Optional.of(GameServer.fromRedisString(data));
-        }
-    }
-
-    public void invalidateCache(String id) {
+    public void unregisterServer(String id) {
         try (Jedis jedis = this.getResource()) {
             jedis.hdel("serversadder:cache", id);
         }
     }
 
+    public void registerPlayer(ProxyPlayer player) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.hset("serversadder:players", player.getUniqueId().toString(), player.toRedisString());
+            jedis.hset("serversadder:player_names", player.getUsername(), player.getUniqueId().toString());
+        }
+    }
+
+    public void sendProxyAction(ProxyActionType type, String... data) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.publish(RedisChannel.PROXIES.getChannel(), "%s:%s".formatted(type, String.join(":", data)));
+        }
+    }
+
+    public Optional<ProxyPlayer> getPlayerByUniqueId(UUID uniqueId) {
+        try (Jedis jedis = this.getResource()) {
+            String redisString = jedis.hget("serversadder:players", uniqueId.toString());
+            return Optional.ofNullable(redisString).map(ProxyPlayer::fromRedisString);
+        }
+    }
+
+    public Optional<ProxyPlayer> getPlayerByUsername(String username) {
+        try (Jedis jedis = this.getResource()) {
+            String uniqueId = jedis.hget("serversadder:player_names", username);
+            if (uniqueId == null)
+                return Optional.empty();
+
+            String redisString = jedis.hget("serversadder:players", uniqueId);
+            return Optional.ofNullable(redisString).map(ProxyPlayer::fromRedisString);
+        }
+    }
+
+    public Set<String> getPlayerNames() {
+        try (Jedis jedis = this.getResource()) {
+            return jedis.hkeys("serversadder:player_names");
+        }
+    }
+
+    public void editPlayer(UUID uniqueId, Consumer<ProxyPlayer> player) {
+        try (Jedis jedis = this.getResource()) {
+            String redisString = jedis.hget("serversadder:players", uniqueId.toString());
+            if (redisString == null)
+                return;
+
+            ProxyPlayer proxyPlayer = ProxyPlayer.fromRedisString(redisString);
+            if (proxyPlayer == null)
+                return;
+
+            player.accept(proxyPlayer);
+
+            jedis.hset("serversadder:players", uniqueId.toString(), proxyPlayer.toRedisString());
+        }
+    }
+
+    public void unregisterPlayer(Player player) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.hdel("serversadder:players", player.getUniqueId().toString());
+            jedis.hdel("serversadder:player_names", player.getUsername());
+        }
+    }
+
     @Override
     public void close() {
+        // Expire all players from this proxy
+        try (Jedis jedis = this.getResource()) {
+            Transaction transaction = jedis.multi();
+
+            this.plugin.getServer()
+                    .getAllPlayers()
+                    .forEach(player -> {
+                        transaction.hdel("serversadder:players", player.getUniqueId().toString());
+                        transaction.hdel("serversadder:player_names", player.getUsername());
+                    });
+
+            transaction.exec();
+        }
+
         // Stop thread
         if (this.thread != null)
             this.thread.interrupt();
 
+        // Stop redis
         super.close();
     }
 }

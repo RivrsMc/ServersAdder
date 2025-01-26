@@ -1,14 +1,16 @@
 package io.rivrs.serversadder.command;
 
-import co.aikar.commands.BaseCommand;
-import co.aikar.commands.annotation.*;
-import co.aikar.commands.velocity.contexts.OnlinePlayer;
+import java.util.concurrent.CompletableFuture;
+
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
-import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.*;
 import io.rivrs.serversadder.ServersAdder;
-import java.util.concurrent.CompletableFuture;
+import io.rivrs.serversadder.model.ProxyActionType;
+import io.rivrs.serversadder.model.ProxyPlayer;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
@@ -41,6 +43,9 @@ public class SendCommand extends BaseCommand {
                 Placeholder.parsed("players", String.valueOf(futures.length))
         ));
 
+        // Broadcast the action
+        this.plugin.getRedis().sendProxyAction(ProxyActionType.SEND_ALL, server.getServerInfo().getName());
+
         CompletableFuture.allOf(futures)
                 .whenCompleteAsync((result, throwable) -> {
                     if (throwable != null) {
@@ -62,18 +67,14 @@ public class SendCommand extends BaseCommand {
     @Subcommand("player")
     @Description("Send a player to a server")
     @Syntax("<player> <server>")
-    @CommandCompletion("@players @servers")
+    @CommandCompletion("@proxyPlayers @servers")
     @CommandPermission("serversadder.send.player")
-    public void onSendPlayer(CommandSource source, OnlinePlayer player, RegisteredServer server) {
-        TagResolver playerPlaceholder = Placeholder.unparsed("player", player.getPlayer().getUsername());
+    public void onSendPlayer(CommandSource source, ProxyPlayer player, RegisteredServer server) {
+        TagResolver playerPlaceholder = Placeholder.unparsed("player", player.getUsername());
         TagResolver serverPlaceholder = Placeholder.unparsed("server", server.getServerInfo().getName());
 
         // Check if the player is already on the server
-        if (player.getPlayer()
-                .getCurrentServer()
-                .map(ServerConnection::getServerInfo)
-                .map(s -> s.equals(server.getServerInfo()))
-                .orElse(false)) {
+        if (player.getServer().equals(server.getServerInfo().getName())) {
             source.sendMessage(this.plugin.getMessages().get(
                     "player-already-on-server",
                     playerPlaceholder,
@@ -88,8 +89,14 @@ public class SendCommand extends BaseCommand {
                 serverPlaceholder
         ));
 
-        // Send the player to the server
-        player.getPlayer()
+        // Do it remotely
+        if (!player.isOnline(this.plugin)) {
+            this.plugin.getRedis().sendProxyAction(ProxyActionType.SEND_PLAYER, player.getUniqueId().toString(), server.getServerInfo().getName());
+            return;
+        }
+
+        // Send the player to the server locally
+        player.getPlayer(this.plugin)
                 .createConnectionRequest(server)
                 .connect()
                 .whenCompleteAsync((result, throwable) -> {
@@ -132,6 +139,9 @@ public class SendCommand extends BaseCommand {
                 targetPlaceholder,
                 Placeholder.parsed("players", String.valueOf(sourceServer.getPlayersConnected().size()))
         ));
+
+        // Broadcast the action
+        this.plugin.getRedis().sendProxyAction(ProxyActionType.SEND_SERVER, sourceServer.getServerInfo().getName(), targetServer.getServerInfo().getName());
 
         CompletableFuture.allOf(futures)
                 .whenCompleteAsync((result, throwable) -> {

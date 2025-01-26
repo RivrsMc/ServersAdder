@@ -144,12 +144,6 @@
       </build>
     </profile>
   </profiles>
-  <repositories>
-    <repository>
-      <id>aikar</id>
-      <url>https://repo.aikar.co/content/groups/aikar/</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>com.velocitypowered</groupId>
