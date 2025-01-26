@@ -70,10 +70,11 @@ public class RedisManager extends AbstractRedisManager {
         String serverName = server.getString("name");
         String serverHost = server.getString("host");
         int serverPort = server.getInt("port");
-        if (serverName == null || serverHost == null || serverPort == 0)
-            throw new IllegalArgumentException("Server name or host or port not found in config");
+        String group = server.getString("group");
+        if (serverName == null || serverHost == null || serverPort == 0 || group == null)
+            throw new IllegalArgumentException("Server name or host or port or group not found in config");
 
-        this.server = new GameServer(serverName, serverHost, serverPort);
+        this.server = new GameServer(serverName, serverHost, serverPort, group);
 
         return new RedisCredentials(host, port, password);
     }

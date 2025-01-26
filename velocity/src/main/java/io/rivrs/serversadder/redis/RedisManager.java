@@ -1,10 +1,8 @@
 package io.rivrs.serversadder.redis;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.velocitypowered.api.proxy.Player;
 
@@ -57,6 +55,21 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
+    public List<GameServer> getServersByGroup(String group) {
+        return this.plugin.getRedis()
+                .pullFromCache()
+                .stream()
+                .filter(server -> server.group().equals(group))
+                .toList();
+    }
+
+    public Map<String, List<GameServer>> getGroups() {
+        return this.plugin.getRedis()
+                .pullFromCache()
+                .stream()
+                .collect(Collectors.groupingBy(GameServer::group));
+    }
+
     public List<GameServer> pullFromCache() {
         try (Jedis jedis = this.getResource()) {
             return jedis.hgetAll("serversadder:cache")
@@ -77,6 +90,18 @@ public class RedisManager extends AbstractRedisManager {
         try (Jedis jedis = this.getResource()) {
             jedis.hset("serversadder:players", player.getUniqueId().toString(), player.toRedisString());
             jedis.hset("serversadder:player_names", player.getUsername(), player.getUniqueId().toString());
+        }
+    }
+
+    public List<ProxyPlayer> getPlayersByServer(String server) {
+        try (Jedis jedis = this.getResource()) {
+            return jedis.hgetAll("serversadder:players")
+                    .values()
+                    .stream()
+                    .map(ProxyPlayer::fromRedisString)
+                    .filter(Objects::nonNull)
+                    .filter(player -> server.equals(player.getServer()))
+                    .toList();
         }
     }
 

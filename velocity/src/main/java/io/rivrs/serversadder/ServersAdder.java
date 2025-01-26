@@ -14,6 +14,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import co.aikar.commands.VelocityCommandManager;
+import io.rivrs.serversadder.command.NetworkCommand;
 import io.rivrs.serversadder.command.SendCommand;
 import io.rivrs.serversadder.command.WhereAmICommand;
 import io.rivrs.serversadder.command.WhereIsCommand;
@@ -84,6 +85,7 @@ public class ServersAdder {
         this.commands.registerCommand(new WhereAmICommand());
         this.commands.registerCommand(new WhereIsCommand());
         this.commands.registerCommand(new SendCommand());
+        this.commands.registerCommand(new NetworkCommand());
     }
 
     @Subscribe

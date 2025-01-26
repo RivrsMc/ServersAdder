@@ -43,7 +43,7 @@ public class MessagePubSub extends JedisPubSub {
 
             switch (type) {
                 case REGISTER -> {
-                    if (split.length != 4) {
+                    if (split.length != 5) {
                         this.logger.warn("Received invalid server registration message: {}", message);
                         return;
                     }
@@ -51,12 +51,13 @@ public class MessagePubSub extends JedisPubSub {
                     String id = split[1];
                     String host = split[2];
                     int port = Integer.parseInt(split[3]);
-                    if (id == null || host == null || port == 0) {
+                    String group = split[4];
+                    if (id == null || host == null || port == 0 || group == null) {
                         this.logger.warn("Unable to parse server registration message: {}", message);
                         return;
                     }
 
-                    this.service.register(new GameServer(id, host, port));
+                    this.service.register(new GameServer(id, host, port, group));
                 }
                 case UPDATE -> this.service.update(split[1]);
                 case UNREGISTER -> this.service.unregister(split[1]);
