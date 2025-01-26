@@ -78,6 +78,10 @@ public class ServerService {
                 }, () -> this.plugin.getLogger().warn("Server {} tried to unregister but it's not registered!", id));
     }
 
+    public boolean isAlive(String id) {
+        return this.keepAlive.containsKey(id);
+    }
+
     public List<String> deadServers(long time, TimeUnit unit) {
         return keepAlive.entrySet()
                 .stream()

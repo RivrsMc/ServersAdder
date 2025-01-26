@@ -1,6 +1,7 @@
 package io.rivrs.serversadder;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import org.slf4j.Logger;
 
@@ -24,6 +25,7 @@ import io.rivrs.serversadder.command.context.ProxyPlayerContextResolver;
 import io.rivrs.serversadder.command.context.ServerContextResolver;
 import io.rivrs.serversadder.configuration.Configuration;
 import io.rivrs.serversadder.configuration.MessageConfiguration;
+import io.rivrs.serversadder.listener.HubListener;
 import io.rivrs.serversadder.listener.PlayerListener;
 import io.rivrs.serversadder.model.ProxyPlayer;
 import io.rivrs.serversadder.redis.RedisManager;
@@ -74,7 +76,10 @@ public class ServersAdder {
         this.service.startHealthCheck();
 
         // Listeners
-        server.getEventManager().register(this, new PlayerListener(this));
+        List.of(
+                new PlayerListener(this),
+                new HubListener(this)
+        ).forEach(listener -> this.server.getEventManager().register(this, listener));
 
         // Commands
         this.commands = new VelocityCommandManager(this.server, this);

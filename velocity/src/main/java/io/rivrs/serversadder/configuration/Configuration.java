@@ -1,11 +1,13 @@
 package io.rivrs.serversadder.configuration;
 
-import com.moandjiezana.toml.Toml;
-import io.rivrs.serversadder.ServersAdder;
-import io.rivrs.serversadder.commons.RedisCredentials;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import com.moandjiezana.toml.Toml;
+
+import io.rivrs.serversadder.ServersAdder;
+import io.rivrs.serversadder.commons.RedisCredentials;
 import lombok.Getter;
 
 @Getter
@@ -20,6 +22,9 @@ public class Configuration {
     // Server related
     private String identifier;
     private String name;
+
+    // Fallback
+    private String fallbackGroup;
 
     public Configuration(ServersAdder plugin) {
         this.plugin = plugin;
@@ -52,12 +57,14 @@ public class Configuration {
 
         // Redis
         Toml redis = toml.getTable("redis");
-
         String host = redis.getString("host");
         int port = redis.getLong("port").intValue();
         String password = redis.getString("password");
-
         this.redisCredentials = new RedisCredentials(host, port, password);
+
+        // Fallback
+        Toml fallback = toml.getTable("fallback");
+        this.fallbackGroup = fallback.getString("server-group");
 
         // Server related
         Toml identifier = toml.getTable("identifier");

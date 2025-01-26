@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.commons.AbstractRedisManager;
@@ -127,6 +128,13 @@ public class RedisManager extends AbstractRedisManager {
             String redisString = jedis.hget("serversadder:players", uniqueId);
             return Optional.ofNullable(redisString).map(ProxyPlayer::fromRedisString);
         }
+    }
+
+    public Optional<RegisteredServer> findEmptiestServerInGroup(String group) {
+        return this.getServersByGroup(group)
+                .stream()
+                .min(Comparator.comparingInt(server -> getPlayersByServer(server.id()).size()))
+                .flatMap(server -> this.plugin.getServer().getServer(server.id()));
     }
 
     public Set<String> getPlayerNames() {
