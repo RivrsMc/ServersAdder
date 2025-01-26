@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum RedisChannel {
     SERVERS("serversadder"),
-    PROXIES("serversadder:proxies");
+    PROXIES("serversadder:proxies"),
+    RESTART("serversadder:restart");
 
     private final String channel;
 }

@@ -9,3 +9,7 @@ password = ""
 
 [fallback]
 server-group = "hub"
+
+[groups]
+hub = "hub"
+spawn = "spawn"
