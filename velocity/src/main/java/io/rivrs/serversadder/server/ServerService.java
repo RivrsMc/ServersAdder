@@ -27,8 +27,8 @@ public class ServerService {
                     List<String> deadServers = this.deadServers(10, TimeUnit.SECONDS);
                     deadServers.forEach(id -> {
                         this.plugin.getLogger().warn("Server {} didn't respond to keep alive, removing...", id);
-                        this.unregister(id);
-                        this.plugin.getRedis().unregisterServer(id);
+                        //this.unregister(id);
+                        //this.plugin.getRedis().unregisterServer(id);
                     });
                 })
                 .repeat(10, TimeUnit.SECONDS)
