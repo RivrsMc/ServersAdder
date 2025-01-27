@@ -24,11 +24,15 @@ public class ServerService {
         this.healthCheckTask = this.plugin.getServer()
                 .getScheduler()
                 .buildTask(this.plugin, () -> {
-                    List<String> deadServers = this.deadServers(10, TimeUnit.SECONDS);
+                    List<String> deadServers = this.deadServers(1, TimeUnit.MINUTES);
                     deadServers.forEach(id -> {
                         this.plugin.getLogger().warn("Server {} didn't respond to keep alive, removing...", id);
-                        //this.unregister(id);
-                        //this.plugin.getRedis().unregisterServer(id);
+
+                        // Remove from cache
+                        this.plugin.getRedis().invalidate(id);
+
+                        // Unregister from velocity
+                        this.unregister(id);
                     });
                 })
                 .repeat(10, TimeUnit.SECONDS)
@@ -74,7 +78,7 @@ public class ServerService {
                 .ifPresentOrElse(server -> {
                     this.plugin.getServer().unregisterServer(server.getServerInfo());
 
-                    this.plugin.getLogger().info("Unregistered server {}!", id);
+                    this.plugin.getLogger().info("Unregistered server {} from velocity!", id);
                 }, () -> this.plugin.getLogger().warn("Server {} tried to unregister but it's not registered!", id));
     }
 

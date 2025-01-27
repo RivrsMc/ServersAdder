@@ -77,11 +77,12 @@ public class RedisManager extends AbstractRedisManager {
                     .values()
                     .stream()
                     .map(GameServer::fromRedisString)
+                    .filter(Objects::nonNull)
                     .toList();
         }
     }
 
-    public void unregisterServer(String id) {
+    public void invalidate(String id) {
         try (Jedis jedis = this.getResource()) {
             jedis.hdel("serversadder:cache", id);
         }

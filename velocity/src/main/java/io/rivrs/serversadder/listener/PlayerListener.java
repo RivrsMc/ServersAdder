@@ -5,6 +5,7 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.model.ProxyPlayer;
@@ -30,8 +31,14 @@ public class PlayerListener {
     @Subscribe
     public void onServerChange(ServerConnectedEvent e) {
         Player player = e.getPlayer();
+        RegisteredServer server = e.getServer();
+        if (player == null
+            || server == null
+            || server.getServerInfo() == null)
+            return;
 
-        this.plugin.getRedis().editPlayer(player.getUniqueId(), proxyPlayer -> proxyPlayer.setServer(e.getServer().getServerInfo().getName()));
+
+        this.plugin.getRedis().editPlayer(player.getUniqueId(), proxyPlayer -> proxyPlayer.setServer(server.getServerInfo().getName()));
     }
 
     @Subscribe

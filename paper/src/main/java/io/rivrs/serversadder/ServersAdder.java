@@ -1,10 +1,11 @@
 package io.rivrs.serversadder;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import co.aikar.commands.PaperCommandManager;
 import io.rivrs.serversadder.command.SetSlotCommand;
 import io.rivrs.serversadder.redis.RedisManager;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public final class ServersAdder extends JavaPlugin {
 
@@ -24,8 +25,8 @@ public final class ServersAdder extends JavaPlugin {
         // Register server
         Bukkit.getScheduler().runTask(this, () -> this.redis.registerServer());
 
-        // Keep alive every 5 seconds
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> this.redis.update(), 0, 100);
+        // Keep alive every 2 seconds
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> this.redis.update(), 0, 40);
     }
 
     @Override
