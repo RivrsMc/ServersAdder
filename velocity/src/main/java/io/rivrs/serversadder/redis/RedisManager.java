@@ -79,6 +79,9 @@ public class RedisManager extends AbstractRedisManager {
                     .map(GameServer::fromRedisString)
                     .filter(Objects::nonNull)
                     .toList();
+        } catch (Exception e) {
+            this.plugin.getLogger().error("Failed to pull servers from cache", e);
+            return List.of();
         }
     }
 
@@ -157,6 +160,8 @@ public class RedisManager extends AbstractRedisManager {
             player.accept(proxyPlayer);
 
             jedis.hset("serversadder:players", uniqueId.toString(), proxyPlayer.toRedisString());
+        } catch (Exception e) {
+            this.plugin.getLogger().error("Failed to edit player", e);
         }
     }
 
@@ -164,6 +169,8 @@ public class RedisManager extends AbstractRedisManager {
         try (Jedis jedis = this.getResource()) {
             jedis.hdel("serversadder:players", player.getUniqueId().toString());
             jedis.hdel("serversadder:player_names", player.getUsername());
+        } catch (Exception e) {
+            this.plugin.getLogger().error("Failed to unregister player", e);
         }
     }
 

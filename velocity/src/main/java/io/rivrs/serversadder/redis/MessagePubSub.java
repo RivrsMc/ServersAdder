@@ -52,7 +52,10 @@ public class MessagePubSub extends JedisPubSub {
                     String host = split[2];
                     int port = Integer.parseInt(split[3]);
                     String group = split[4];
-                    if (id == null || host == null || port == 0 || group == null) {
+                    if (id == null
+                        || host == null
+                        || port == 0
+                        || group == null) {
                         this.logger.warn("Unable to parse server registration message: {}", message);
                         return;
                     }
