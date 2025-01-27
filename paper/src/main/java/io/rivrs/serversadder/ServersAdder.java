@@ -26,7 +26,7 @@ public final class ServersAdder extends JavaPlugin {
         Bukkit.getScheduler().runTask(this, () -> this.redis.registerServer());
 
         // Keep alive every 2 seconds
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> this.redis.update(), 0, 40);
+        Bukkit.getScheduler().runTaskTimer(this, () -> this.redis.update(), 0, 40);
     }
 
     @Override

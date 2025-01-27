@@ -104,7 +104,8 @@ public class RedisManager extends AbstractRedisManager {
                     .values()
                     .stream()
                     .map(ProxyPlayer::fromRedisString)
-                    .filter(Objects::nonNull)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .filter(player -> server.equals(player.getServer()))
                     .toList();
         }
@@ -119,7 +120,8 @@ public class RedisManager extends AbstractRedisManager {
     public Optional<ProxyPlayer> getPlayerByUniqueId(UUID uniqueId) {
         try (Jedis jedis = this.getResource()) {
             String redisString = jedis.hget("serversadder:players", uniqueId.toString());
-            return Optional.ofNullable(redisString).map(ProxyPlayer::fromRedisString);
+            return Optional.ofNullable(redisString)
+                    .flatMap(ProxyPlayer::fromRedisString);
         }
     }
 
@@ -130,7 +132,8 @@ public class RedisManager extends AbstractRedisManager {
                 return Optional.empty();
 
             String redisString = jedis.hget("serversadder:players", uniqueId);
-            return Optional.ofNullable(redisString).map(ProxyPlayer::fromRedisString);
+            return Optional.ofNullable(redisString)
+                    .flatMap(ProxyPlayer::fromRedisString);
         }
     }
 
@@ -144,6 +147,9 @@ public class RedisManager extends AbstractRedisManager {
     public Set<String> getPlayerNames() {
         try (Jedis jedis = this.getResource()) {
             return jedis.hkeys("serversadder:player_names");
+        } catch (Exception e) {
+            this.plugin.getLogger().error("Failed to get player names", e);
+            return Set.of();
         }
     }
 
@@ -153,7 +159,7 @@ public class RedisManager extends AbstractRedisManager {
             if (redisString == null)
                 return;
 
-            ProxyPlayer proxyPlayer = ProxyPlayer.fromRedisString(redisString);
+            ProxyPlayer proxyPlayer = ProxyPlayer.fromRedisString(redisString).orElse(null);
             if (proxyPlayer == null)
                 return;
 

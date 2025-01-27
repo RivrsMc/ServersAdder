@@ -1,7 +1,9 @@
 package io.rivrs.serversadder.model;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.velocitypowered.api.proxy.Player;
@@ -31,12 +33,16 @@ public class ProxyPlayer {
         return "%s:%s:%s:%s".formatted(this.uniqueId, this.username, this.proxy, this.server);
     }
 
-    public static ProxyPlayer fromRedisString(String redisString) {
+    public static @NotNull Optional<ProxyPlayer> fromRedisString(String redisString) {
         String[] split = redisString.split(":");
         if (split.length != 4)
-            return null;
+            return Optional.empty();
 
-        return new ProxyPlayer(UUID.fromString(split[0]), split[1], split[2], split[3]);
+        try {
+            return Optional.of(new ProxyPlayer(UUID.fromString(split[0]), split[1], split[2], split[3]));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
 
