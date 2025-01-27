@@ -153,7 +153,10 @@ public class MessagePubSub extends JedisPubSub {
             this.logger.info("PokeCore request received for player {} to server {}", playerId, serverId);
             this.plugin.getServer()
                     .getPlayer(playerId)
-                    .ifPresentOrElse(player -> player.createConnectionRequest(this.plugin.getServer().getServer(serverId).orElse(null)).fireAndForget(), () -> this.logger.warn("[POKECORE] Player {} not found", playerId));
+                    .ifPresentOrElse(player -> this.plugin.getServer().getServer(serverId)
+                                    .ifPresentOrElse(server -> player.createConnectionRequest(server).fireAndForget(),
+                                            () -> this.logger.warn("[POKECORE] Server {} not found", serverId)),
+                            () -> this.logger.warn("[POKECORE] Player {} not found", playerId));
         } else {
             this.logger.warn("Received invalid channel: {}", message);
         }
