@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
@@ -102,5 +103,15 @@ public class ServersAdder {
 
         // Commands
         this.commands.unregisterCommands();
+    }
+
+    @Subscribe
+    public void onProxyReload(ProxyReloadEvent e) {
+        this.logger.info("Reloading ServersAdder configuration...");
+
+        this.configuration.load();
+        this.messages.load();
+
+        this.logger.info("ServersAdder configuration reloaded.");
     }
 }
