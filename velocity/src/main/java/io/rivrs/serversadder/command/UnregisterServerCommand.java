@@ -11,7 +11,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 @CommandAlias("unregisterserver")
 @Description("Unregisters a server from the network")
 @CommandPermission("serversadder.unregisterserver")
-public class UnregisterCommand extends BaseCommand {
+public class UnregisterServerCommand extends BaseCommand {
 
     @Dependency
     private ServersAdder plugin;

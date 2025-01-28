@@ -150,7 +150,7 @@ public class MessagePubSub extends JedisPubSub {
             UUID playerId = UUID.fromString(split[0]);
             String serverId = split[1];
 
-            this.logger.info("PokeCore request received for player {} to server {}", playerId, serverId);
+            this.logger.debug("PokeCore request received for player {} to server {}", playerId, serverId);
             this.plugin.getServer()
                     .getPlayer(playerId)
                     .ifPresentOrElse(player -> this.plugin.getServer().getServer(serverId)

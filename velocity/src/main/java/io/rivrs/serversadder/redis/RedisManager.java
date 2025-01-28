@@ -46,6 +46,10 @@ public class RedisManager extends AbstractRedisManager {
         for (GameServer gameServer : this.pullFromCache()) {
             this.plugin.getService().register(gameServer);
         }
+        this.plugin.getLogger().info("Registered {} servers from cache", this.plugin.getServer().getAllServers().size());
+
+        // Invalidate players cache
+        this.invalidatePlayersCache();
     }
 
     private void registerPubSub() {
@@ -180,9 +184,7 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
-    @Override
-    public void close() {
-        // Expire all players from this proxy
+    public void invalidatePlayersCache() {
         try (Jedis jedis = this.getResource()) {
             Transaction transaction = jedis.multi();
 
@@ -195,6 +197,12 @@ public class RedisManager extends AbstractRedisManager {
 
             transaction.exec();
         }
+    }
+
+    @Override
+    public void close() {
+        // Expire all players from this proxy
+        this.invalidatePlayersCache();
 
         // Stop thread
         if (this.thread != null)

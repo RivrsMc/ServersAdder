@@ -36,9 +36,10 @@ public abstract class AbstractRedisManager {
                 if (jedis.ping() == null)
                     throw new Exception("Unable to get a response from Redis");
             }
-
-            postLoad();
             logger.info("Connected to Redis");
+
+            // Post load
+            postLoad();
         } catch (Exception e) {
             logger.error("Failed to connect to Redis", e);
         }
