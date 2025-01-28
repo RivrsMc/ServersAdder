@@ -148,6 +148,19 @@ public class RedisManager extends AbstractRedisManager {
                 .flatMap(server -> this.plugin.getServer().getServer(server.id()));
     }
 
+    public List<ProxyPlayer> getPlayersByProxy(String id) {
+        try (Jedis jedis = this.getResource()) {
+            return jedis.hgetAll("serversadder:players")
+                    .values()
+                    .stream()
+                    .map(ProxyPlayer::fromRedisString)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(player -> id.equals(player.getProxy()))
+                    .toList();
+        }
+    }
+
     public Set<String> getPlayerNames() {
         try (Jedis jedis = this.getResource()) {
             return jedis.hkeys("serversadder:player_names");
@@ -184,12 +197,12 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
+
     public void invalidatePlayersCache() {
         try (Jedis jedis = this.getResource()) {
             Transaction transaction = jedis.multi();
 
-            this.plugin.getServer()
-                    .getAllPlayers()
+            this.getPlayersByProxy(this.plugin.getConfiguration().getIdentifier())
                     .forEach(player -> {
                         transaction.hdel("serversadder:players", player.getUniqueId().toString());
                         transaction.hdel("serversadder:player_names", player.getUsername());
