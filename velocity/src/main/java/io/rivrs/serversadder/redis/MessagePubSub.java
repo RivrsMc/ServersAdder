@@ -10,7 +10,10 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.commons.GameServer;
 import io.rivrs.serversadder.commons.MessageType;
+import io.rivrs.serversadder.commons.RedisChannel;
+import io.rivrs.serversadder.model.CleanRestartContext;
 import io.rivrs.serversadder.model.ProxyActionType;
+import io.rivrs.serversadder.model.ServerStatus;
 import io.rivrs.serversadder.server.ServerService;
 import lombok.RequiredArgsConstructor;
 import redis.clients.jedis.JedisPubSub;
@@ -61,6 +64,13 @@ public class MessagePubSub extends JedisPubSub {
                     }
 
                     this.service.register(new GameServer(id, host, port, group));
+
+                    // Clean restart
+                    CleanRestartContext context = this.plugin.getRestartService().getContext();
+                    if (context != null
+                        && context.getCurrentServer() != null
+                        && context.getCurrentServer().id().equals(id))
+                        context.getStatus().set(ServerStatus.RESTARTED);
                 }
                 case UPDATE -> this.service.update(split[1]);
                 case UNREGISTER -> this.service.unregister(split[1]);
@@ -157,6 +167,32 @@ public class MessagePubSub extends JedisPubSub {
                                     .ifPresentOrElse(server -> player.createConnectionRequest(server).fireAndForget(),
                                             () -> this.logger.warn("[POKECORE] Server {} not found", serverId)),
                             () -> this.logger.warn("[POKECORE] Player {} not found", playerId));
+        } else if (channel.equals(RedisChannel.RESTART.getChannel())) {
+            String[] split = message.split(":");
+            if (split.length < 2) {
+                this.logger.warn("Received invalid restart message: {}", message);
+                return;
+            }
+
+            CleanRestartContext context = this.plugin.getRestartService().getContext();
+            if (context == null) {
+                this.logger.warn("Received restart message but context is null: {}", message);
+                return;
+            }
+
+            MessageType type = MessageType.valueOf(split[0].toUpperCase());
+            String serverId = split[1];
+
+            if (context.getCurrentServer() == null || !context.getCurrentServer().id().equals(serverId)) {
+                this.logger.warn("Received restart message for invalid server: {}", serverId);
+                return;
+            }
+
+            switch (type) {
+                case PRE_SHUTDOWN_ACK -> context.getStatus().set(ServerStatus.PRE_SHUTDOWN_ACK);
+                case SHUTDOWN_ACK -> context.getStatus().set(ServerStatus.SHUTDOWN_ACK);
+                default -> this.logger.warn("Received unknown message type: {} | {}", type, message);
+            }
         } else {
             this.logger.warn("Received invalid channel: {}", message);
         }

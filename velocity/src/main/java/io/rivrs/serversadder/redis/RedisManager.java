@@ -8,9 +8,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import io.rivrs.serversadder.ServersAdder;
-import io.rivrs.serversadder.commons.AbstractRedisManager;
-import io.rivrs.serversadder.commons.GameServer;
-import io.rivrs.serversadder.commons.RedisCredentials;
+import io.rivrs.serversadder.commons.*;
 import io.rivrs.serversadder.model.ProxyActionType;
 import io.rivrs.serversadder.model.ProxyPlayer;
 import redis.clients.jedis.Jedis;
@@ -54,7 +52,7 @@ public class RedisManager extends AbstractRedisManager {
 
     private void registerPubSub() {
         try (Jedis jedis = this.getResource()) {
-            jedis.subscribe(new MessagePubSub(this.plugin), RedisChannel.SERVERS.getChannel(), RedisChannel.PROXIES.getChannel(), RedisChannel.POKE_CORE.getChannel());
+            jedis.subscribe(new MessagePubSub(this.plugin), RedisChannel.SERVERS.getChannel(), RedisChannel.PROXIES.getChannel(), RedisChannel.POKE_CORE.getChannel(), RedisChannel.RESTART.getChannel());
         } catch (Exception e) {
             this.plugin.getLogger().error("Failed to register pub/sub", e);
         }
@@ -65,6 +63,15 @@ public class RedisManager extends AbstractRedisManager {
                 .pullFromCache()
                 .stream()
                 .filter(server -> server.group().equals(group))
+                .toList();
+    }
+
+    public List<String> getGroupNames() {
+        return this.plugin.getRedis()
+                .pullFromCache()
+                .stream()
+                .map(GameServer::group)
+                .distinct()
                 .toList();
     }
 
@@ -115,6 +122,12 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
+    public void send(RedisChannel channel, MessageType type, String... data) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.publish(channel.getChannel(), "%s:%s".formatted(type, String.join(":", data)));
+        }
+    }
+
     public void sendProxyAction(ProxyActionType type, String... data) {
         try (Jedis jedis = this.getResource()) {
             jedis.publish(RedisChannel.PROXIES.getChannel(), "%s:%s".formatted(type, String.join(":", data)));
@@ -144,6 +157,7 @@ public class RedisManager extends AbstractRedisManager {
     public Optional<RegisteredServer> findEmptiestServerInGroup(String group) {
         return this.getServersByGroup(group)
                 .stream()
+                .filter(server -> !ServersAdder.get().getRestartService().isRestarting(server.id()))
                 .min(Comparator.comparingInt(server -> getPlayersByServer(server.id()).size()))
                 .flatMap(server -> this.plugin.getServer().getServer(server.id()));
     }

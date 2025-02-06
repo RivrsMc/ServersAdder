@@ -6,9 +6,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import co.aikar.commands.PaperCommandManager;
 import io.rivrs.serversadder.command.SetSlotCommand;
 import io.rivrs.serversadder.redis.RedisManager;
+import lombok.Getter;
 
 public final class ServersAdder extends JavaPlugin {
 
+    @Getter
     private RedisManager redis;
     private PaperCommandManager commands;
 

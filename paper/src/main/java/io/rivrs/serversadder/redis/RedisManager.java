@@ -1,17 +1,17 @@
 package io.rivrs.serversadder.redis;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import io.rivrs.serversadder.ServersAdder;
-import io.rivrs.serversadder.commons.AbstractRedisManager;
-import io.rivrs.serversadder.commons.GameServer;
-import io.rivrs.serversadder.commons.MessageType;
-import io.rivrs.serversadder.commons.RedisCredentials;
+import io.rivrs.serversadder.commons.*;
+import lombok.Getter;
 import redis.clients.jedis.Jedis;
 
 public class RedisManager extends AbstractRedisManager {
 
     private final ServersAdder plugin;
+    @Getter
     private GameServer server;
 
     public RedisManager(ServersAdder plugin) {
@@ -19,10 +19,14 @@ public class RedisManager extends AbstractRedisManager {
         this.plugin = plugin;
     }
 
-    private void send(MessageType type, String message) {
+    public void send(RedisChannel channel, MessageType type, String message) {
         try (Jedis jedis = getResource()) {
-            jedis.publish("serversadder", "%s:%s".formatted(type.name().toLowerCase(), message));
+            jedis.publish(channel.getChannel(), "%s:%s".formatted(type.name().toLowerCase(), message));
         }
+    }
+
+    public void send(MessageType type, String message) {
+        this.send(RedisChannel.SERVERS, type, message);
     }
 
     public void registerServer() {
@@ -47,7 +51,6 @@ public class RedisManager extends AbstractRedisManager {
             jedis.hdel("serversadder:cache", server.id());
         }
     }
-
 
     @Override
     public RedisCredentials loadCredentials() {
@@ -81,6 +84,13 @@ public class RedisManager extends AbstractRedisManager {
 
     @Override
     public void postLoad() {
-
+        // Register pub/sub
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Jedis jedis = this.getResource()) {
+                jedis.subscribe(new MessagePubSub(this.plugin, this), RedisChannel.RESTART.getChannel());
+            } catch (Exception e) {
+                this.plugin.getSLF4JLogger().error("Failed to register pub/sub", e);
+            }
+        });
     }
 }

@@ -99,5 +99,4 @@ public class ServerService {
                 .getServer(id)
                 .isPresent();
     }
-
 }

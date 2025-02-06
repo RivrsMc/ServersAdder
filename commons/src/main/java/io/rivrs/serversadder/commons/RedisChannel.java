@@ -1,4 +1,4 @@
-package io.rivrs.serversadder.redis;
+package io.rivrs.serversadder.commons;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
