@@ -36,10 +36,10 @@ public class CleanRestartContext {
     }
 
     public @Nullable GameServer next() {
+        this.currentServerIndex++;
         if (this.currentServerIndex >= this.sourceServers.size())
             return null;
-
-        this.currentServerIndex++;
+        
         this.currentServer = this.sourceServers.get(this.currentServerIndex);
         this.status.set(ServerStatus.ONLINE);
 
