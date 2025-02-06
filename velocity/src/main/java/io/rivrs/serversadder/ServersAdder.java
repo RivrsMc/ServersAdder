@@ -99,7 +99,8 @@ public class ServersAdder {
                 new NetworkCommand(),
                 new UnregisterServerCommand(),
                 new RegisterServerCommand(),
-                new CleanRestartCommand()
+                new CleanRestartCommand(),
+                new AlertCommand()
         ).forEach(this.commands::registerCommand);
 
         // Register instance

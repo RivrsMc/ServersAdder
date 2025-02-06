@@ -1,5 +1,7 @@
 package io.rivrs.serversadder.redis;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.bukkit.Bukkit;
 import org.slf4j.Logger;
 
@@ -51,20 +53,18 @@ public class MessagePubSub extends JedisPubSub {
                     Bukkit.getScheduler().runTask(this.plugin, () -> {
                         Bukkit.setWhitelist(true);
 
-                        long start = System.currentTimeMillis();
+                        AtomicInteger countdown = new AtomicInteger(30);
                         Bukkit.getScheduler().runTaskTimer(this.plugin, (task) -> {
-                            long elapsed = System.currentTimeMillis() - start;
 
                             // We're done
-                            if (elapsed >= 30_000) {
+                            if (countdown.decrementAndGet() <= 0) {
                                 this.redis.send(RedisChannel.RESTART, MessageType.PRE_SHUTDOWN_ACK, serverId);
                                 task.cancel();
                                 return;
                             }
 
                             // Announce to players
-                            int remaining = (int) (30 - elapsed / 1000);
-                            Bukkit.broadcast(Component.text("Le serveur va redémarrer dans %d secondes.".formatted(remaining), NamedTextColor.RED, TextDecoration.BOLD));
+                            Bukkit.broadcast(Component.text("Le serveur va redémarrer dans %d secondes.".formatted(countdown.get()), NamedTextColor.RED, TextDecoration.BOLD));
                         }, 0, 20);
 
                     });
