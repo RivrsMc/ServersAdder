@@ -14,6 +14,7 @@ import io.rivrs.serversadder.server.RestartService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
@@ -56,6 +57,7 @@ public class CleanRestartTask implements Runnable {
                 redis.send(RedisChannel.RESTART, MessageType.PRE_SHUTDOWN, server.id(), context.getReason());
 
                 context.getStatus().set(ServerStatus.PRE_SHUTDOWN);
+                context.setLastActionTime(System.currentTimeMillis());
             }
             case PRE_SHUTDOWN_ACK -> {
                 this.plugin.getLogger().info("Shutting down server {}...", server.id());
@@ -82,11 +84,27 @@ public class CleanRestartTask implements Runnable {
                         .thenRun(() -> {
                             redis.send(RedisChannel.RESTART, MessageType.SHUTDOWN, server.id(), context.getReason());
                             context.getStatus().set(ServerStatus.SHUTDOWN);
+
+                            context.setLastActionTime(System.currentTimeMillis());
                         });
             }
             case SHUTDOWN_ACK -> {
                 this.plugin.getLogger().info("{} is rebooting...", server.id());
                 context.getStatus().set(ServerStatus.OFFLINE);
+
+                context.setLastActionTime(System.currentTimeMillis());
+
+                // Go to next server after 1m30s
+                plugin.getServer().getScheduler()
+                        .buildTask(plugin, () -> {
+                            GameServer next = context.next();
+                            if (next == null)
+                                return;
+
+                            context.getStatus().set(ServerStatus.ONLINE);
+                        })
+                        .delay(90, TimeUnit.SECONDS)
+                        .schedule();
             }
             case RESTARTED -> {
                 context.message(this.plugin.getMessages().get(
@@ -96,12 +114,6 @@ public class CleanRestartTask implements Runnable {
                         Placeholder.parsed("total", String.valueOf(context.getSourceServers().size()))
                 ));
                 this.plugin.getLogger().info("Server {} has been restarted.", server.id());
-
-                GameServer next = context.next();
-                if (next == null)
-                    return;
-
-                context.getStatus().set(ServerStatus.ONLINE);
             }
         }
     }

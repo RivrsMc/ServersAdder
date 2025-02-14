@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import com.velocitypowered.api.command.CommandSource;
@@ -24,6 +25,8 @@ public class CleanRestartContext {
 
     private int currentServerIndex = 0;
     private GameServer currentServer;
+    @Setter
+    private long lastActionTime = System.currentTimeMillis();
     private final AtomicReference<ServerStatus> status = new AtomicReference<>(ServerStatus.ONLINE);
 
     public CleanRestartContext(CommandSource executor, List<GameServer> sourceServers, String sourceGroup, String targetGroup, String reason) {
