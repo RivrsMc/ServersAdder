@@ -1,11 +1,6 @@
 package io.rivrs.serversadder.task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
-
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.commons.GameServer;
 import io.rivrs.serversadder.commons.MessageType;
@@ -16,6 +11,9 @@ import io.rivrs.serversadder.model.ProxyPlayer;
 import io.rivrs.serversadder.model.ServerStatus;
 import io.rivrs.serversadder.redis.RedisManager;
 import io.rivrs.serversadder.server.RestartService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
@@ -31,13 +29,23 @@ public class CleanRestartTask implements Runnable {
 
         CleanRestartContext context = this.service.getContext();
         if (context == null) {
-            this.service.shutdown();
-            return;
-        } else if (context.isDone()) {
+            // Stop the task
             this.service.shutdown();
 
+            // Notify
+            this.plugin.getLogger().warn("Clean restart task has been stopped due to the context is null.");
+            return;
+        } else if (context.isDone()) {
+            // Stop the task
+            this.service.shutdown();
+
+            // Notify
             this.plugin.getLogger().info("Clean restart task has been completed.");
             context.message(this.plugin.getMessages().get("clean-restart-done", Placeholder.parsed("group", context.getSourceGroup())));
+
+            // Mark as done
+            plugin.getRedis().markGroupAsNotRestarting(context.getSourceGroup());
+
             return;
         }
 

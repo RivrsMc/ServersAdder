@@ -53,9 +53,18 @@ public class RestartService {
             return;
         }
 
+        // Check if group is already restarting
+        if (plugin.getRedis().isGroupRestarting(sourceGroup)) {
+            source.sendMessage(this.plugin.getMessages().get("group-already-restarting", Placeholder.parsed("group", sourceGroup)));
+            return;
+        }
+
         // Notify console & command source
         this.logger.info("Starting clean restart from {} to {} with reason {}", sourceGroup, targetGroup, reason);
         source.sendMessage(this.plugin.getMessages().get("clean-restart-started", Placeholder.parsed("source", sourceGroup), Placeholder.parsed("target", targetGroup)));
+
+        // Mark as restarting
+        plugin.getRedis().markGroupAsRestarting(sourceGroup);
 
         // Create context
         this.context = new CleanRestartContext(source, sourceServers, sourceGroup, targetGroup, reason);

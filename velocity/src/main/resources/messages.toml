@@ -15,3 +15,4 @@ clean-restart-started = "<#16de87>Restarting <#16de8><source><#16de87>... Player
 group-empty = "<#16de87>Cannot start clean restart, group <#16de8><group><#16de87> is empty!"
 server-rebooted = "<#16de87><#16de8><server><#16de87> has been rebooted! (<#16de8><rebooted><#16de87>/<#16de8><total><#16de87>)"
 clean-restart-done = "<#16de87>All <#16de8><group><#16de87> servers have been restarted!"
+group-already-restarting = "<#16de87>Group <#16de8><group><#16de87> is already restarting!"

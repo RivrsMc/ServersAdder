@@ -1,16 +1,14 @@
 package io.rivrs.serversadder.redis;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-
 import io.rivrs.serversadder.ServersAdder;
 import io.rivrs.serversadder.commons.*;
 import io.rivrs.serversadder.model.ProxyActionType;
 import io.rivrs.serversadder.model.ProxyPlayer;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
@@ -211,7 +209,6 @@ public class RedisManager extends AbstractRedisManager {
         }
     }
 
-
     public void invalidatePlayersCache() {
         try (Jedis jedis = this.getResource()) {
             Transaction transaction = jedis.multi();
@@ -223,6 +220,24 @@ public class RedisManager extends AbstractRedisManager {
                     });
 
             transaction.exec();
+        }
+    }
+
+    public void markGroupAsRestarting(String group) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.hset("serversadder:restart", group, "true");
+        }
+    }
+
+    public void markGroupAsNotRestarting(String group) {
+        try (Jedis jedis = this.getResource()) {
+            jedis.hdel("serversadder:restart", group);
+        }
+    }
+
+    public boolean isGroupRestarting(String group) {
+        try (Jedis jedis = this.getResource()) {
+            return jedis.hexists("serversadder:restart", group);
         }
     }
 
